@@ -8,7 +8,8 @@ from .db import get_db
 
 bp = Blueprint('task', __name__)
 
-@bp.route('/')
+@bp.route('/tasks/')
+@login_required
 def index():
     db = get_db()
     tasks = db.execute(
@@ -46,20 +47,20 @@ def add_task():
 
 
 def get_task(id, check_author=True):
-    post = get_db().execute(
+    task = get_db().execute(
         'SELECT t.id, title, body, created, user_id, username'
         ' FROM task t JOIN user u ON t.user_id = u.id'
         ' WHERE t.id = ?',
         (id,)
     ).fetchone()
 
-    if post is None:
+    if task is None:
         abort(404, f"Task id {id} doesn't exist.")
 
-    if check_author and post['user_id'] != g.user['id']:
+    if check_author and task['user_id'] != g.user['id']:
         abort(403)
 
-    return post
+    return task
 
 
 @bp.route('/<int:id>/update', methods=('GET', 'POST'))
@@ -68,6 +69,7 @@ def update(id):
     task = get_task(id)
 
     if request.method == 'POST':
+        print('request was post')
         title = request.form['title']
         body = request.form['body']
         error = None
@@ -90,11 +92,11 @@ def update(id):
     return render_template('task/update.html', task=task)
 
 
-@bp.route('/<int:id>/delete', methods=('POST',))
+@bp.route('/<int:id>/delete', methods=('DELETE', 'GET'))
 @login_required
 def delete(id):
-    get_task(id)
+    task = get_task(id)
     db = get_db()
-    db.execute('DELETE FROM task WHERE id = ?', (id,))
+    db.execute('DELETE FROM task WHERE id = ?', (task['id'],))
     db.commit()
     return redirect(url_for('task.index'))

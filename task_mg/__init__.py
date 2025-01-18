@@ -32,7 +32,7 @@ def create_app(test_config=None):
 
     from . import tasks
     app.register_blueprint(tasks.bp)
-    app.add_url_rule('/', endpoint='index')
+    app.add_url_rule('/tasks/', endpoint='index')
 
     return app
 

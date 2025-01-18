@@ -8,8 +8,22 @@
 {% endblock %}
 
 {% block content %}
-  {% for task in task %}
-    <li>{{task.title}}</li>
+  {% for task in tasks %}
+    <article class="post">
+      <header>
+        <div>
+          <h1>{{ task['title'] }}</h1>
+          <div class="about">by {{ task['username'] }} on {{ task['created'].strftime('%Y-%m-%d') }}</div>
+        </div>
+        {% if g.user['id'] == task['user_id'] %}
+        <div class="action-buttons">
+          <a class="btn btn-edit" href="{{ url_for('task.update', id=task['id']) }}">Edit</a>
+          <a class="btn btn-delete" href="{{ url_for('task.delete', id=task['id']) }}">Delete</a>
+        </div>
+        {% endif %}
+      </header>
+      <p class="body">{{ task['body'] }}</p>
+    </article>
     {% if not loop.last %}
       <hr>
     {% endif %}
